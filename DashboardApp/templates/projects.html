@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+
+<html>
+	<head>
+		<title>Project</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<!--[if lte IE 8]><script src="../static/assets_website/js/ie/html5shiv.js"></script><![endif]-->
+		<link rel="stylesheet" href="../static/assets_website/css/main.css" />
+		<!--[if lte IE 8]><link rel="stylesheet" href="../static/assets_website/css/ie8.css" /><![endif]-->
+	</head>
+	<body>
+
+		<!-- Header -->
+			<div id="header">				
+				<h1 id="logo"><a href="{{ url_for('index') }}">Hanna Oh Descher</a></h1>
+				<nav id="nav">
+					<ul>
+						<li><a href="{{ url_for('about') }}">About</a></li>
+						<li><a href="{{ url_for('skills') }}">Skills</a></li>
+						<li><a href="{{ url_for('publications') }}">Publications</a></li>
+						<li><a href="{{ url_for('projects') }}">Project</a>
+                            <ul>
+								<li><a href="{{ url_for('projects') }}">Description</a></li>
+								<li><a href="{{ url_for('dashboard') }}">Demo</a></li>
+                            </ul>
+                        </li>
+						<li><a href="{{ url_for('contact') }}">Contact</a></li>
+					</ul>
+				</nav>
+			</div>
+
+		<!-- Main -->
+			<section id="main">
+				<div class="container">
+					<header class="major">
+						<h4>Insight Data Science Project</h4>
+                        <h2>Predicting Customer Churn</h2>
+					</header>
+                    <section id="project">
+                        <p>As a Fellow at Insight Data Science, I consulted for a startup company,
+                            enabling them to predict customer churn in a weekly subscription service.
+                            Since I cannot disclose company’s information, the following description is based on a hypothetical scenario,
+                            which closely mirrors the company’s business model.
+                        </p>
+                        <p><i>Imagine a hypothetical company with a new Keurig-like machine, which is equipped with
+                            a special function that scans in coffee pod information to brew high-quality, user-tailored coffee.
+                            Customers can purchase a selection of these special pods through a weekly subscription service.
+                            Because the company’s revenue comes entirely from the subscription service,
+                            it is vital to the success of the company to minimize user churn.
+                            As a consultant for a real company with a subscription-based service,
+                            I was asked to build a churn prediction model in order to identify customers
+                            who are on the verge of cancelling their service.</i>
+                        </p>
+                        <br>
+                    </section>
+
+					<section id="slides">
+                        <div style="text-align: center;">
+                            <iframe src="http://www.slideshare.net/slideshow/embed_code/key/dmXO1RXClr632" width="466" height="388" frameborder="0" marginwidth="0" marginheight="0" scrolling="no" style="border:1px solid #CCC; border-width:1px; margin-bottom:5px; max-width: 100%;" allowfullscreen> </iframe>
+                            <p><a href="https://docs.google.com/presentation/d/1e7HrySEqfCOlVRHLIDvNlTyaCprmYCkcTZkWlTChkso/edit?usp=sharing" target="_blank">
+                                presentation slides with animations</a></p>
+                        </div>
+                        <br>
+                    </section>
+
+                    <section id="results">
+                        <h3>Data</h3>
+                        <p>Data consisted of user interactions with the service as well as and survey responses.
+                            The most interesting dataset consisted of user activity data,
+                            which contained ~3 months worth of timestamps of daily pod usage by each customer. </p>
+                        <h3>Feature engineering</h3>
+                        <ul>
+                            <li>Using multiple sources of subscription information,
+                                I extracted each user’s <b>subscription history</b> such as cohort number
+                                (i.e., when a user started the service), duration of subscription, number of active/skipped weeks.</li>
+                            <li>I combined delivery address data with
+                                the <a href="https://www.census.gov/geo/reference/ua/urban-rural-2010.html" target="_blank">U.S. census urban/rural classification data</a>
+                                to extract each user’s <b>location information (e.g., county and state) and urbanity scores</b>. </li>
+                            <li>Most of survey data lacked user ID information.
+                                By cross-referencing user names and email addresses,
+                                I was able to recover ~45% of user demographics information (e.g., age, gender, etc.).</li>
+                            <li>Based on pod usage timestamps, I extracted <b>user engagement metrics</b> for each week.
+                                For example, setting a delivery date as a reference point,
+                                I estimated time lag between pod usage and delivery,
+                                frequency of machine usage,
+                                and number of pods that went unused each week (see slide 5).</li>
+                        </ul>
+                        <h3>Predicting customer churn based on long-term user history</h3>
+                        <p>To predict customers who are likely to cancel the service,
+                            I created a feature matrix with rows representing each user with columns consisting of
+                            user subscription history, location information, and average user engagement metrics.
+                            Since ~30% of data consisted of churn, I used <a href="https://www.jair.org/media/953/live-953-2037-jair.pdf" target="_blank">SMOTE</a>
+                            oversampling method to balance the data (note that this technique was applied only to the training data).
+                            The resulting balanced feature matrix was then used to train a
+                            <a href="http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html" target="_blank">random forest classifier</a>.
+                            Cross-validation was performed to tune parameters (i.e., number of trees; minimum number of samples required to be at a leaf node)
+                            based on Area Under the Curve (AUC) of the precision-recall curve.
+                            Finally, using a separate test dataset, the model was evaluated (slide 6),
+                            which achieved near-optimal performance of 0.94 AUC with 88% recall!</p>
+                        <h4>But, is this a <i>good</i> model?</h4>
+                        <p>To further evaluate the model, I extracted feature importance (slide 7).
+                            The most important features were user history information such as
+                            subscription duration, cohort, and number of active weeks.
+                            These metrics, however, are rather <i>unique</i> profiles of early adopters,
+                            who tend to be more devoted to the product than average users.
+                            Therefore, this model may <i>not</i> generalize well if the company’s user base changes over time.
+                        </p>
+                        <h3>Which <i>actions</i> are indicative of churn?<br>
+                            Predicting customer churn based on short-term product engagement</h3>
+                        <p>Back to the drawing board, I decided to re-create features focusing on customer actions.
+                            Since users are making decisions to either stay or cancel on a weekly basis,
+                            I assumed that the the most recent activity leading up to these decisions could reflect a users’ change in mind.
+                            Therefore, I segmented two weeks of data in a sliding time window fashion
+                            and stacked them up per user and then, across all users,
+                            creating a user-agnostic but action-oriented feature set (see slide 8).
+                        </p>
+                        <p>I then applied a similar approach using SMOTE and random forest classification as described above,
+                            which resulted in better than chance AUC of 0.71 and 65% recall (slide 9).
+                            Both performance metrics have the potential for improvement as company accumulates more data.
+                        </p>
+                        <p>Again, I extracted feature importance (slide 10).
+                            Interestingly, automatic pods selection in the previous week was the best indicator for churn.
+                            That is, the current system sends out a random selection of pods
+                            if a user fails to make their own selection by each week’s deadline,
+                            which is a strong indicator for user’s decreasing interest in the service.
+                            Indeed, when I compared percentage of pods that were selected automatically,
+                            churned users had a significantly higher percentage of automatic pods selection than the active users
+                            (two-sample <i>t</i>-test, <i>p</i> < 0.001; slide 11).</p>
+                    </section>
+                    <section id="deliverable">
+                        <h3>Deliverable</h3>
+                        <ol>
+                            <li>Developed two churn prediction models based on long-term user history and short-term product engagement.</li>
+                            <li>Built a <a href="{{ url_for('dashboard') }}" target="_blank">web dashboard application</a> to track and visualize weekly user activity, churn rate, and top 50 high risk users,
+                                <i>to enable effective intervention with customers who are on the verge of cancelling the service</i>.</li>
+                        </ol>
+                    </section>
+                    <section id="tools">
+                        <h3>Tools</h3>
+                        <p>The project, including the web dashboard application backend, was developed in Python using the following packages:
+                            pandas, SQLAlchemy, Psycopg2, SciPy, imbalanced-learn, and Scikit-Learn.
+                            Data was stored in PostgreSQL database, and visualization was performed via Matplotlib and seaborn.
+                            The webapp frontend uses HTML, CSS, Javascript., Flask, and D3.js. This website is deployed on Amazon Web Services.
+                        </p>
+                        <h3>Codes</h3>
+                        <p>Sample codes will be available on my Github soon.</p>
+                    </section>
+				</div>
+			</section>
+
+		<!-- Footer -->
+			<div id="footer">
+				<div class="container">
+					<ul class="social">
+						<li><a href="https://www.linkedin.com/in/hanna-descher" class="icon fa-linkedin" target="_blank"><span>Linkedin</span></a></li>
+						<li><a href="https://github.com/hanna5descher" class="icon fa-github" target="_blank"><span>github</span></a></li>
+						<li><a href="https://www.egnerlab.org" class="icon fa-graduation-cap" target="_blank"><span>EgnerLab</span></a></li>
+						<li><a href="{{ url_for('contact') }}" class="icon fa-envelope"><span>Email</span></a></li>
+					</ul>
+					<span>&copy; hanna5descher. All rights reserved.</span>						
+				</div>
+			</div>
+			
+		<!-- Scripts -->
+			<script src="../static/assets_website/js/jquery.min.js"></script>
+			<script src="../static/assets_website/js/skel.min.js"></script>
+			<script src="../static/assets_website/js/jquery.dropotron.min.js"></script>
+			<script src="../static/assets_website/js/jquery.onvisible.min.js"></script>
+			<script src="../static/assets_website/js/jquery.poptrox.min.js"></script>
+			<script src="../static/assets_website/js/util.js"></script>
+			<!--[if lte IE 8]><script src="../static/assets_website/js/ie/respond.min.js"></script><![endif]-->
+			<script src="../static/assets_website/js/main.js"></script>
+
+	</body>
+</html>
